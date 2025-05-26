@@ -1,0 +1,112 @@
+import Message from "../models/Message.js";
+import User from "../models/User.js";
+import cloudinary from "../lib/cloudinary.js";
+//Get all user except the logged in user
+export const getUsersForSidebar = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const filteredUsers = await User.find({ _id: { $ne: userId } }).select(
+      "-password"
+    );
+    //Count the number of messages not seen
+    const unseenMessages = {};
+    const promises = filteredUsers.map(async (user) => {
+      const messages = await Message.find({
+        senderId: user._id,
+        receiverId: userId,
+        seen: false,
+      });
+      if (messages.length > 0) {
+        unseenMessages[user._id] = messages.length;
+      }
+    });
+    await Promise.all(promises);
+    res.json({
+      success: true,
+      users: filteredUsers,
+      unseenMessages,
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//Get all messages for selected user
+
+export const getMessages = async (req, res) => {
+  try {
+    const { id: selectedUserId } = req.params;
+    const myId = req.user._id;
+    const messages = await Message.find({
+      $or: [
+        { sender: myId, receiver: selectedUserId },
+        { sender: selectedUserId, receiver: myId },
+      ],
+    });
+    await Message.updateMany(
+      { senderId: selectedUserId, receiverId: myId },
+      { seen: true }
+    );
+    res.json({
+      success: true,
+      messages,
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const markMessagesAsSeen = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Message.findByIdAndUpdate(id, { seen: true });
+    res.json({
+      success: true,
+      message: "Message marked as seen",
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const sendMessage = async (req, res) => {
+  try {
+    const sender = req.user._id;
+    const receiver = req.params.id; // ✅ Get receiver ID from URL
+
+    const { text, image } = req.body;
+
+    if (!receiver) {
+      return res.status(400).json({ message: "Receiver is required." });
+    }
+
+    if (!text && !image) {
+      return res.status(400).json({ message: "Message cannot be empty." });
+    }
+
+    const newMessage = new Message({
+      sender,
+      receiver,
+      text,
+      image,
+    });
+
+    await newMessage.save();
+
+    res.status(200).json(newMessage);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
