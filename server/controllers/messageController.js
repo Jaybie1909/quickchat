@@ -1,6 +1,8 @@
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import cloudinary from "../lib/cloudinary.js";
+import { io, userSocketMap } from "../server.js";
+
 //Get all user except the logged in user
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -12,8 +14,8 @@ export const getUsersForSidebar = async (req, res) => {
     const unseenMessages = {};
     const promises = filteredUsers.map(async (user) => {
       const messages = await Message.find({
-        senderId: user._id,
-        receiverId: userId,
+        sender: user._id,
+        receiver: userId,
         seen: false,
       });
       if (messages.length > 0) {
@@ -48,7 +50,7 @@ export const getMessages = async (req, res) => {
       ],
     });
     await Message.updateMany(
-      { senderId: selectedUserId, receiverId: myId },
+      { sender: selectedUserId, receiver: myId },
       { seen: true }
     );
     res.json({
@@ -84,7 +86,7 @@ export const markMessagesAsSeen = async (req, res) => {
 export const sendMessage = async (req, res) => {
   try {
     const sender = req.user._id;
-    const receiver = req.params.id; // ✅ Get receiver ID from URL
+    const receiver = req.params.id;
 
     const { text, image } = req.body;
 
@@ -104,6 +106,12 @@ export const sendMessage = async (req, res) => {
     });
 
     await newMessage.save();
+
+    // Emit the new message to the receiver's socket
+    const receiverSocketId = userSocketMap[receiver];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
 
     res.status(200).json(newMessage);
   } catch (error) {

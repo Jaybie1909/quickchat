@@ -82,8 +82,8 @@ const ChatContainer = () => {
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`flex items-end gap-2 justify-end ${
-              msg.senderId !== authUser._id ? "flex-row-reverse" : ""
+            className={`flex items-end gap-2 ${
+              msg.sender === authUser._id ? "justify-end" : "justify-start"
             }`}
           >
             {msg.image ? (
@@ -95,7 +95,9 @@ const ChatContainer = () => {
             ) : (
               <p
                 className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all bg-violet-500/30 text-white ${
-                  msg.senderId !== authUser._id ? "rounded-br-none" : ""
+                  msg.sender === authUser._id
+                    ? "rounded-br-none"
+                    : "rounded-bl-none"
                 }`}
               >
                 {msg.text}
@@ -104,7 +106,7 @@ const ChatContainer = () => {
             <div className="text-center text-xs">
               <img
                 src={
-                  msg.senderId === authUser._id
+                  msg.sender === authUser._id
                     ? authUser?.profilePic || assets.avatar_icon
                     : selectedUser?.profilePic || assets.avatar_icon
                 }

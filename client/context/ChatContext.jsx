@@ -9,7 +9,7 @@ export const ChatProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [unseenMessages, setUnseenMessages] = useState({});
-  const { socket, axios } = useContext(AuthContext);
+  const { socket, axios, authUser } = useContext(AuthContext);
 
   const getUsers = async () => {
     try {
@@ -40,29 +40,28 @@ export const ChatProvider = ({ children }) => {
         `/api/messages/send/${selectedUser._id}`,
         messageData
       );
-      if (data.success) {
-        setMessages((prevMessages) => [...prevMessages, data.newMessage]);
-      } else {
-        toast.error(data.message);
-      }
+      setMessages((prevMessages) => [...prevMessages, data]);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || "Failed to send message");
     }
   };
 
   const subscribeToMessages = async () => {
     if (!socket) return;
     socket.on("newMessage", (newMessage) => {
-      if (selectedUser && newMessage.senderId === selectedUser._id) {
-        newMessage.seen = true;
+      if (selectedUser && newMessage.sender === selectedUser._id) {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
         axios.put(`/api/messages/mark/${newMessage._id}`);
+      } else if (
+        selectedUser &&
+        newMessage.sender === authUser._id &&
+        newMessage.receiver === selectedUser._id
+      ) {
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
       } else {
         setUnseenMessages((prevUnseenMessages) => ({
           ...prevUnseenMessages,
-          [newMessage._id]: prevUnseenMessages[newMessage.senderId]
-            ? prevUnseenMessages[newMessage.senderId] + 1
-            : 1,
+          [newMessage.sender]: (prevUnseenMessages[newMessage.sender] || 0) + 1,
         }));
       }
     });
