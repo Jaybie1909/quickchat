@@ -1,23 +1,62 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import Sidebar from "../components/Sidebar";
 import ChatContainer from "../components/ChatContainer";
 import RightSidebar from "../components/RightSidebar";
 import { ChatContext } from "../../context/ChatContext";
+
 const HomePage = () => {
-  const { selectedUser } = useContext(ChatContext);
+  const { selectedUser, setSelectedUser } = useContext(ChatContext);
+
   return (
     <div className="border w-full h-screen sm:px-[15%] sm:py-[5%]">
       <div
-        className={`backdrop-blur-xl border-2 border-gray-600 rounded-2xl overflow-hidden h-[100%] grid grid-cols-1 relative
-           ${
-             selectedUser
-               ? "md:grid-cols-[1fr_1.5fr_1fr] xl:grid-cols-[1fr_2fr_1fr]"
-               : "md:grid-cols-2"
-           }`}
+        className={`backdrop-blur-xl border-2 border-gray-600 rounded-2xl overflow-hidden h-full grid grid-cols-1 relative
+          ${
+            selectedUser
+              ? "fixed inset-0 sm:static sm:rounded-2xl sm:h-full"
+              : "h-full"
+          }
+          ${
+            selectedUser
+              ? "md:grid-cols-[1fr_1.5fr_1fr] xl:grid-cols-[1fr_2fr_1fr]"
+              : "md:grid-cols-2"
+          }`}
       >
-        <Sidebar />
+        {/* Sidebars - hidden on mobile when chat is open */}
+        <div className={`${selectedUser ? "hidden sm:block" : "block"}`}>
+          <Sidebar />
+        </div>
+
+        {/* Chat - always visible */}
         <ChatContainer />
-        <RightSidebar />
+
+        {/* Right sidebar - hidden on mobile when chat is open */}
+        <div className={`${selectedUser ? "hidden sm:block" : "block"}`}>
+          <RightSidebar />
+        </div>
+
+        {/* Mobile back button */}
+        {selectedUser && (
+          <button
+            onClick={() => setSelectedUser(null)}
+            className="sm:hidden absolute top-4 left-4 z-50 bg-white/80 rounded-full p-2 shadow-lg"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );
