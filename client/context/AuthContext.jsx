@@ -39,7 +39,11 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common["token"] = data.token;
         setToken(data.token);
         localStorage.setItem("token", data.token);
-        toast.success("Logged in successfully");
+        toast.success(
+          state === "signup"
+            ? "Account created successfully"
+            : "Logged in successfully"
+        );
       } else {
         toast.error(data.message);
       }
