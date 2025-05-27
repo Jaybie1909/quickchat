@@ -5,10 +5,10 @@ import RightSidebar from "../components/RightSidebar";
 import { ChatContext } from "../../context/ChatContext";
 
 const HomePage = () => {
-  const { selectedUser, setSelectedUser } = useContext(ChatContext);
+  const { selectedUser } = useContext(ChatContext);
 
   return (
-    <div className="border w-full h-screen sm:px-[15%] sm:py-[5%]">
+    <div className="w-full h-screen sm:px-[15%] sm:py-[5%]">
       <div
         className={`backdrop-blur-xl border-2 border-gray-600 rounded-2xl overflow-hidden h-full grid grid-cols-1 relative
           ${
@@ -22,16 +22,26 @@ const HomePage = () => {
               : "md:grid-cols-2"
           }`}
       >
-        {/* Sidebars - hidden on mobile when chat is open */}
-        <div className={`${selectedUser ? "hidden sm:block" : "block"}`}>
+        {/* Left Sidebar - hidden on mobile when chat is open */}
+        <div
+          className={`${
+            selectedUser ? "hidden sm:block" : "block"
+          } h-full overflow-hidden border-r border-gray-600`}
+        >
           <Sidebar />
         </div>
 
-        {/* Chat - always visible */}
-        <ChatContainer />
+        {/* Chat Container - scroll handled internally */}
+        <div className="h-full overflow-hidden">
+          <ChatContainer />
+        </div>
 
-        {/* Right sidebar - hidden on mobile when chat is open */}
-        <div className={`${selectedUser ? "hidden sm:block" : "block"}`}>
+        {/* Right Sidebar - hidden on mobile when chat is open */}
+        <div
+          className={`${
+            selectedUser ? "hidden sm:block" : "block"
+          } h-full overflow-hidden border-l border-gray-600`}
+        >
           <RightSidebar />
         </div>
       </div>
