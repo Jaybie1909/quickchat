@@ -11,7 +11,12 @@ const messageSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    text: { type: String, required: true },
+    text: {
+      type: String,
+      required: function () {
+        return !this.image; // text is required only if there's no image
+      },
+    },
     image: { type: String, default: "" },
     seen: { type: Boolean, default: false },
   },
