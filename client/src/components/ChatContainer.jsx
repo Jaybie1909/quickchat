@@ -76,10 +76,10 @@ const ChatContainer = () => {
       </div>
 
       {/* Messages - Scrollable area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse">
         {messages.map((msg, index) => (
           <div
-            key={index}
+            key={msg._id || index}
             className={`flex items-end gap-2 ${
               msg.sender === authUser._id ? "justify-end" : "justify-start"
             }`}
@@ -111,13 +111,19 @@ const ChatContainer = () => {
                 alt=""
                 className="w-7 h-7 rounded-full"
               />
-              <p className="text-xs text-gray-400 mt-1">
-                {formatMessageTime(msg.createdAt)}
-              </p>
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-gray-400 mt-1">
+                  {formatMessageTime(msg.createdAt)}
+                </p>
+                {msg.sender === authUser._id && (
+                  <span className="text-xs text-gray-400 mt-1">
+                    {msg.seen ? "Seen" : ""}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ))}
-        <div ref={scrollEnd}></div>
       </div>
 
       {/* Input Box - Fixed position */}

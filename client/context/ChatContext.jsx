@@ -16,7 +16,9 @@ export const ChatProvider = ({ children }) => {
       const { data } = await axios.get("/api/messages/users");
       if (data.success) {
         setUsers(data.users);
-        setUnseenMessages(data.unseenMessages);
+        if (data.unseenMessages) {
+          setUnseenMessages(data.unseenMessages);
+        }
       }
     } catch (error) {
       toast.error(error.message);
@@ -25,9 +27,17 @@ export const ChatProvider = ({ children }) => {
 
   const getMessages = async (userId) => {
     try {
+      setMessages([]);
       const { data } = await axios.get(`/api/messages/${userId}`);
       if (data.success) {
-        setMessages(data.messages);
+        const sortedMessages = data.messages.sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+        setMessages(sortedMessages);
+        setUnseenMessages((prev) => ({
+          ...prev,
+          [userId]: 0,
+        }));
       }
     } catch (error) {
       toast.error(error.message);
@@ -52,6 +62,10 @@ export const ChatProvider = ({ children }) => {
       if (selectedUser && newMessage.sender === selectedUser._id) {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
         axios.put(`/api/messages/mark/${newMessage._id}`);
+        setUnseenMessages((prev) => ({
+          ...prev,
+          [selectedUser._id]: 0,
+        }));
       } else if (
         selectedUser &&
         newMessage.sender === authUser._id &&
@@ -75,6 +89,12 @@ export const ChatProvider = ({ children }) => {
     subscribeToMessages();
     return () => unsubscribeFromMessages();
   }, [socket, selectedUser]);
+
+  useEffect(() => {
+    if (!selectedUser) {
+      setMessages([]);
+    }
+  }, [selectedUser]);
 
   const value = {
     messages,

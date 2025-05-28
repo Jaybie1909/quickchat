@@ -74,7 +74,6 @@ const Sidebar = () => {
           <div
             onClick={() => {
               setSelectedUser(user);
-              setUnseenMessages((prev) => ({ ...prev, [user._id]: 0 }));
             }}
             className={`relative flex items-center gap-2 p-2 pl-4 rounded cursor-pointer max-sm:text-sm ${
               selectedUser?._id === user.id && "bg-[#282142]/50"
@@ -95,7 +94,7 @@ const Sidebar = () => {
             </div>
             {unseenMessages[user._id] > 0 && (
               <p className="absolute top-4 right-4 text-xs h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50">
-                {index}
+                {unseenMessages[user._id]}
               </p>
             )}
           </div>
