@@ -13,19 +13,7 @@ const server = http.createServer(app);
 
 //Socket.io setup
 export const io = new Server(server, {
-  cors: {
-    origin:
-      process.env.NODE_ENV === "production"
-        ? ["https://quickchat-nine.vercel.app", "http://localhost:5173"]
-        : "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  },
-  transports: ["websocket", "polling"],
-  path: "/socket.io/",
-  allowEIO3: true,
-  pingTimeout: 60000,
-  pingInterval: 25000,
+  cors: { origin: "*" },
 });
 
 //Store online users
@@ -33,16 +21,7 @@ export const userSocketMap = {};
 
 //Middleware setup
 app.use(express.json({ limit: "4mb" }));
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? ["https://quickchat-nine.vercel.app", "http://localhost:5173"]
-        : "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
+app.use(cors());
 
 //Socket.io connection
 io.on("connection", (socket) => {
@@ -73,4 +52,4 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 //Export server for vercel
-export { app, server };
+export default server;
