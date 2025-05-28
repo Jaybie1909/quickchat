@@ -154,6 +154,20 @@ export const ChatProvider = ({ children }) => {
         }));
       }
     });
+    socket.on("messageDeleted", (deletedMsg) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === deletedMsg._id ? deletedMsg : msg))
+      );
+      setMessageCache((prev) => {
+        const updated = { ...prev };
+        if (selectedUser && updated[selectedUser._id]) {
+          updated[selectedUser._id] = updated[selectedUser._id].map((msg) =>
+            msg._id === deletedMsg._id ? deletedMsg : msg
+          );
+        }
+        return updated;
+      });
+    });
   }, [socket, selectedUser, authUser, axios]);
 
   const unsubscribeFromMessages = useCallback(() => {
@@ -171,6 +185,48 @@ export const ChatProvider = ({ children }) => {
     }
   }, [selectedUser]);
 
+  const deleteMessage = useCallback(
+    async (messageId) => {
+      // Optimistically update message in state and cache
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? {
+                ...msg,
+                text: "This message was deleted",
+                deleted: true,
+                image: "",
+              }
+            : msg
+        )
+      );
+      setMessageCache((prev) => {
+        const updated = { ...prev };
+        if (selectedUser && updated[selectedUser._id]) {
+          updated[selectedUser._id] = updated[selectedUser._id].map((msg) =>
+            msg._id === messageId
+              ? {
+                  ...msg,
+                  text: "This message was deleted",
+                  deleted: true,
+                  image: "",
+                }
+              : msg
+          );
+        }
+        return updated;
+      });
+      try {
+        await axios.delete(`/api/messages/${messageId}`);
+      } catch (error) {
+        toast.error(
+          error.response?.data?.message || "Failed to delete message"
+        );
+      }
+    },
+    [axios, selectedUser]
+  );
+
   const value = {
     messages,
     users,
@@ -181,6 +237,7 @@ export const ChatProvider = ({ children }) => {
     setSelectedUser,
     unseenMessages,
     setUnseenMessages,
+    deleteMessage,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

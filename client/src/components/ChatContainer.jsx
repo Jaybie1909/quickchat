@@ -4,15 +4,27 @@ import assets from "../assets/assets";
 import { formatMessageTime } from "../lib/utils";
 import { ChatContext } from "../../context/ChatContext";
 import { AuthContext } from "../../context/AuthContext";
+import { FaTrashAlt, FaEllipsisV } from "react-icons/fa";
 
 const ChatContainer = () => {
-  const { messages, selectedUser, setSelectedUser, sendMessage, getMessages } =
-    useContext(ChatContext);
+  const {
+    messages,
+    selectedUser,
+    setSelectedUser,
+    sendMessage,
+    getMessages,
+    deleteMessage,
+  } = useContext(ChatContext);
   const { authUser, onlineUsers } = useContext(AuthContext);
 
   const scrollEnd = useRef();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [mobileMenuMsg, setMobileMenuMsg] = useState(null);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -34,6 +46,35 @@ const ChatContainer = () => {
       e.target.value = "";
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleDeleteClick = (msg) => {
+    setMessageToDelete(msg);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (messageToDelete) {
+      await deleteMessage(messageToDelete._id);
+      setShowDeleteModal(false);
+      setMessageToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setMessageToDelete(null);
+  };
+
+  let longPressTimer = null;
+  const handleTouchStart = (msg) => {
+    longPressTimer = setTimeout(() => {
+      setMobileMenuMsg(msg);
+      setShowMobileMenu(true);
+    }, 500);
+  };
+  const handleTouchEnd = () => {
+    clearTimeout(longPressTimer);
   };
 
   useEffect(() => {
@@ -91,60 +132,119 @@ const ChatContainer = () => {
 
       {/* Messages - Scrollable area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse">
-        {messages.map((msg, index) => (
-          <div
-            key={msg._id || index}
-            className={`flex items-end gap-2 ${
-              msg.sender === authUser._id ? "justify-end" : "justify-start"
-            }`}
-          >
-            {msg.image ? (
-              <div className="flex flex-col items-end">
+        {messages.map((msg, index) => {
+          const isSender = msg.sender === authUser._id;
+          const isDeleted = msg.deleted;
+          return (
+            <div
+              key={msg._id || index}
+              className={`flex items-end gap-2 ${
+                isSender ? "justify-end" : "justify-start"
+              } group relative`}
+              onTouchStart={
+                isSender && !isDeleted ? () => handleTouchStart(msg) : undefined
+              }
+              onTouchEnd={isSender && !isDeleted ? handleTouchEnd : undefined}
+            >
+              {/* Message bubble or deleted placeholder */}
+              {isDeleted ? (
+                <div className="flex flex-col items-end w-full">
+                  <div className="italic text-xs text-gray-400 bg-gray-800/70 rounded px-3 py-2 select-none">
+                    This message was deleted
+                  </div>
+                </div>
+              ) : msg.image ? (
+                <div className="flex flex-col items-end relative group">
+                  <img
+                    src={msg.image}
+                    alt=""
+                    className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden"
+                  />
+                  {isSender && (
+                    <span className="text-[10px] text-gray-400 mt-1">
+                      {msg.seen ? "Seen" : ""}
+                    </span>
+                  )}
+                  {isSender && !isDeleted && (
+                    <button
+                      className="absolute top-1 right-1 p-1 text-gray-400 hover:text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() =>
+                        setShowDropdown(
+                          msg._id === showDropdown ? null : msg._id
+                        )
+                      }
+                    >
+                      <FaEllipsisV size={12} />
+                    </button>
+                  )}
+                  {showDropdown === msg._id && (
+                    <div className="absolute top-6 right-0 w-20 bg-gray-800 border border-gray-700 rounded shadow-lg z-10">
+                      <button
+                        className="block w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700"
+                        onClick={() => handleDeleteClick(msg)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col items-end relative group">
+                  <p
+                    className={`p-2 max-w-[200px] md:max-w-[300px] text-sm font-light rounded-lg break-all ${
+                      isSender
+                        ? "bg-violet-600 rounded-br-none text-white"
+                        : "bg-gray-700 rounded-bl-none text-white"
+                    }`}
+                  >
+                    {msg.text}
+                  </p>
+                  {isSender && (
+                    <span className="text-[10px] text-gray-400 mt-1">
+                      {msg.seen ? "Seen" : ""}
+                    </span>
+                  )}
+                  {isSender && !isDeleted && (
+                    <button
+                      className="absolute top-1 right-1 p-1 text-gray-400 hover:text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() =>
+                        setShowDropdown(
+                          msg._id === showDropdown ? null : msg._id
+                        )
+                      }
+                    >
+                      <FaEllipsisV size={12} />
+                    </button>
+                  )}
+                  {showDropdown === msg._id && (
+                    <div className="absolute top-6 right-0 w-20 bg-gray-800 border border-gray-700 rounded shadow-lg z-10">
+                      <button
+                        className="block w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700"
+                        onClick={() => handleDeleteClick(msg)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="flex flex-col items-center">
                 <img
-                  src={msg.image}
+                  src={
+                    isSender
+                      ? authUser?.profilePic || assets.avatar_icon
+                      : selectedUser?.profilePic || assets.avatar_icon
+                  }
                   alt=""
-                  className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden"
+                  className="w-7 h-7 rounded-full"
                 />
-                {msg.sender === authUser._id && (
-                  <span className="text-[10px] text-gray-400 mt-1">
-                    {msg.seen ? "Seen" : ""}
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col items-end">
-                <p
-                  className={`p-2 max-w-[200px] md:max-w-[300px] text-sm font-light rounded-lg break-all ${
-                    msg.sender === authUser._id
-                      ? "bg-violet-600 rounded-br-none text-white"
-                      : "bg-gray-700 rounded-bl-none text-white"
-                  }`}
-                >
-                  {msg.text}
+                <p className="text-xs text-gray-400 mt-1">
+                  {formatMessageTime(msg.createdAt)}
                 </p>
-                {msg.sender === authUser._id && (
-                  <span className="text-[10px] text-gray-400 mt-1">
-                    {msg.seen ? "Seen" : ""}
-                  </span>
-                )}
               </div>
-            )}
-            <div className="flex flex-col items-center">
-              <img
-                src={
-                  msg.sender === authUser._id
-                    ? authUser?.profilePic || assets.avatar_icon
-                    : selectedUser?.profilePic || assets.avatar_icon
-                }
-                alt=""
-                className="w-7 h-7 rounded-full"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                {formatMessageTime(msg.createdAt)}
-              </p>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Input Box - Fixed position */}
@@ -184,6 +284,58 @@ const ChatContainer = () => {
           </button>
         </form>
       </div>
+
+      {/* Modal for delete confirmation */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-72 text-center">
+            <div className="mb-4 text-white">Delete this message?</div>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleConfirmDelete}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded"
+              >
+                Delete
+              </button>
+              <button
+                onClick={handleCancelDelete}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile menu for long press */}
+      {showMobileMenu && mobileMenuMsg && (
+        <div
+          className="fixed inset-0 z-50 flex items-end md:hidden bg-black/40"
+          onClick={() => setShowMobileMenu(false)}
+        >
+          <div
+            className="w-full bg-gray-800 rounded-t-lg p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="block w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-gray-700"
+              onClick={() => {
+                handleDeleteClick(mobileMenuMsg);
+                setShowMobileMenu(false);
+              }}
+            >
+              Delete
+            </button>
+            <button
+              className="block w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-gray-700"
+              onClick={() => setShowMobileMenu(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   ) : (
     <div className="hidden md:flex flex-col items-center justify-center gap-2 h-full bg-gray-900/50">
