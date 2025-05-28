@@ -29,28 +29,18 @@ io.on("connection", (socket) => {
   console.log("User Connected", userId);
 
   if (userId) {
-    // Add user to online users map
     userSocketMap[userId] = socket.id;
-    console.log("Current online users:", Object.keys(userSocketMap));
     // Broadcast updated online users list to all clients
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   }
 
-  // Handle disconnection
   socket.on("disconnect", () => {
     console.log("User Disconnected", userId);
     if (userId) {
-      // Remove user from online users map
       delete userSocketMap[userId];
-      console.log("Remaining online users:", Object.keys(userSocketMap));
       // Broadcast updated online users list to all clients
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
     }
-  });
-
-  // Handle errors
-  socket.on("error", (error) => {
-    console.error("Socket error:", error);
   });
 });
 

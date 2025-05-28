@@ -37,11 +37,6 @@ const Sidebar = () => {
     getUsers();
   }, [onlineUsers]);
 
-  // Debug online status
-  useEffect(() => {
-    console.log("Current online users:", onlineUsers);
-  }, [onlineUsers]);
-
   return (
     <div
       className={`bg-[#8185B2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white ${
@@ -85,7 +80,6 @@ const Sidebar = () => {
       <div className="flex flex-col">
         {sortedUsers.map((user, index) => (
           <div
-            key={user._id}
             onClick={() => {
               setSelectedUser(user);
             }}
@@ -101,10 +95,7 @@ const Sidebar = () => {
             <div className="flex flex-col leading-5">
               <p>{user.fullName}</p>
               {onlineUsers.includes(user._id) ? (
-                <span className="text-green-400 text-xs flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  Online
-                </span>
+                <span className="text-green-400 text-xs">Online</span>
               ) : (
                 <span className="text-neutral-400 text-xs">Offline</span>
               )}

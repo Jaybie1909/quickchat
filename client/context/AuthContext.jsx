@@ -93,15 +93,10 @@ export const AuthProvider = ({ children }) => {
       query: {
         userId: userData._id,
       },
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
     });
 
     newSocket.on("connect", () => {
       console.log("Socket connected");
-      // Request current online users list when connecting
-      newSocket.emit("getOnlineUsers");
     });
 
     newSocket.on("disconnect", () => {
@@ -109,25 +104,11 @@ export const AuthProvider = ({ children }) => {
     });
 
     newSocket.on("getOnlineUsers", (userIds) => {
-      console.log("Received online users:", userIds);
       setOnlineUsers(userIds);
-    });
-
-    newSocket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
     });
 
     setSocket(newSocket);
   };
-
-  // Update online users when socket reconnects
-  useEffect(() => {
-    if (socket) {
-      socket.on("connect", () => {
-        socket.emit("getOnlineUsers");
-      });
-    }
-  }, [socket]);
 
   useEffect(() => {
     if (token) {
