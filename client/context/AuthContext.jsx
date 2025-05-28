@@ -82,18 +82,52 @@ export const AuthProvider = ({ children }) => {
 
   // Connect socket function to handle socket connection and online user updates
   const connectSocket = (userData) => {
-    if (!userData || socket?.connected) return;
+    if (!userData) return;
+
+    // Disconnect existing socket if any
+    if (socket) {
+      socket.disconnect();
+    }
+
     const newSocket = io(backendUrl, {
       query: {
         userId: userData._id,
       },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
-    newSocket.connect();
-    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Socket connected");
+      // Request current online users list when connecting
+      newSocket.emit("getOnlineUsers");
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+
     newSocket.on("getOnlineUsers", (userIds) => {
+      console.log("Received online users:", userIds);
       setOnlineUsers(userIds);
     });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+    });
+
+    setSocket(newSocket);
   };
+
+  // Update online users when socket reconnects
+  useEffect(() => {
+    if (socket) {
+      socket.on("connect", () => {
+        socket.emit("getOnlineUsers");
+      });
+    }
+  }, [socket]);
 
   useEffect(() => {
     if (token) {
@@ -102,6 +136,13 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
+
+    // Cleanup socket connection on unmount
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
   }, []);
 
   const value = {

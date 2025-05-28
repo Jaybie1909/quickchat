@@ -28,13 +28,29 @@ io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
   console.log("User Connected", userId);
 
-  if (userId) userSocketMap[userId] = socket.id;
-  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  if (userId) {
+    // Add user to online users map
+    userSocketMap[userId] = socket.id;
+    console.log("Current online users:", Object.keys(userSocketMap));
+    // Broadcast updated online users list to all clients
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  }
 
+  // Handle disconnection
   socket.on("disconnect", () => {
     console.log("User Disconnected", userId);
-    delete userSocketMap[userId];
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    if (userId) {
+      // Remove user from online users map
+      delete userSocketMap[userId];
+      console.log("Remaining online users:", Object.keys(userSocketMap));
+      // Broadcast updated online users list to all clients
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    }
+  });
+
+  // Handle errors
+  socket.on("error", (error) => {
+    console.error("Socket error:", error);
   });
 });
 
