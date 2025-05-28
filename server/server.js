@@ -13,7 +13,19 @@ const server = http.createServer(app);
 
 //Socket.io setup
 export const io = new Server(server, {
-  cors: { origin: "*" },
+  cors: {
+    origin:
+      process.env.NODE_ENV === "production"
+        ? ["https://your-frontend-domain.vercel.app", "http://localhost:5173"]
+        : "*",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+  transports: ["websocket", "polling"],
+  path: "/socket.io/",
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 //Store online users
@@ -21,7 +33,15 @@ export const userSocketMap = {};
 
 //Middleware setup
 app.use(express.json({ limit: "4mb" }));
-app.use(cors());
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === "production"
+        ? ["https://your-frontend-domain.vercel.app", "http://localhost:5173"]
+        : "*",
+    credentials: true,
+  })
+);
 
 //Socket.io connection
 io.on("connection", (socket) => {
@@ -52,4 +72,4 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 //Export server for vercel
-export default server;
+export { app, server };

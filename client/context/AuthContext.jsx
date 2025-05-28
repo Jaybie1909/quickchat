@@ -87,7 +87,23 @@ export const AuthProvider = ({ children }) => {
       query: {
         userId: userData._id,
       },
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
+      path: "/socket.io/",
     });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+      toast.error("Connection error. Please refresh the page.");
+    });
+
+    newSocket.on("connect", () => {
+      console.log("Socket connected successfully");
+    });
+
     newSocket.connect();
     setSocket(newSocket);
     newSocket.on("getOnlineUsers", (userIds) => {
