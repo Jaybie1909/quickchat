@@ -16,9 +16,9 @@ export const io = new Server(server, {
   cors: {
     origin:
       process.env.NODE_ENV === "production"
-        ? ["https://your-frontend-domain.vercel.app", "http://localhost:5173"]
+        ? ["https://quickchat-nine.vercel.app", "http://localhost:5173"]
         : "*",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   },
   transports: ["websocket", "polling"],
@@ -37,8 +37,9 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? ["https://your-frontend-domain.vercel.app", "http://localhost:5173"]
+        ? ["https://quickchat-nine.vercel.app", "http://localhost:5173"]
         : "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
