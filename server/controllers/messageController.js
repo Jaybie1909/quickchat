@@ -12,6 +12,8 @@ export const getUsersForSidebar = async (req, res) => {
     );
     //Count the number of messages not seen
     const unseenMessages = {};
+    // Store last message time for each user
+    const userLastMessageMap = {};
     const promises = filteredUsers.map(async (user) => {
       const messages = await Message.find({
         sender: user._id,
@@ -21,11 +23,27 @@ export const getUsersForSidebar = async (req, res) => {
       if (messages.length > 0) {
         unseenMessages[user._id] = messages.length;
       }
+      // Find the latest message exchanged with this user
+      const lastMsg = await Message.findOne({
+        $or: [
+          { sender: userId, receiver: user._id },
+          { sender: user._id, receiver: userId },
+        ],
+      })
+        .sort({ createdAt: -1 })
+        .select("createdAt");
+      userLastMessageMap[user._id] = lastMsg ? lastMsg.createdAt : null;
     });
     await Promise.all(promises);
+    // Attach lastMessageAt to each user
+    const usersWithLastMsg = filteredUsers.map((user) => {
+      const u = user.toObject();
+      u.lastMessageAt = userLastMessageMap[user._id] || null;
+      return u;
+    });
     res.json({
       success: true,
-      users: filteredUsers,
+      users: usersWithLastMsg,
       unseenMessages,
     });
   } catch (error) {

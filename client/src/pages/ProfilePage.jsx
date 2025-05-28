@@ -41,7 +41,7 @@ const ProfilePage = () => {
               onChange={(e) => setSelectedImage(e.target.files[0])}
               type="file"
               id="avatar"
-              accept=".png, .jpg, .jpeg"
+              accept=".png, .jpg, .jpeg .webp"
               hidden
             />
             <img
