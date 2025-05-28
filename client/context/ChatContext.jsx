@@ -37,7 +37,7 @@ export const ChatProvider = ({ children }) => {
         const { data } = await axios.get(`/api/messages/${userId}`);
         if (data.success) {
           const sortedMessages = data.messages.sort(
-            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
           );
           setMessages(sortedMessages);
           setMessageCache((prev) => ({
@@ -65,7 +65,7 @@ export const ChatProvider = ({ children }) => {
             const { data } = await axios.get(`/api/messages/${user._id}`);
             if (data.success) {
               const sortedMessages = data.messages.sort(
-                (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+                (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
               );
               setMessageCache((prev) => ({
                 ...prev,
@@ -108,11 +108,11 @@ export const ChatProvider = ({ children }) => {
           `/api/messages/send/${selectedUser._id}`,
           messageData
         );
-        setMessages((prevMessages) => [...prevMessages, data]);
+        setMessages((prevMessages) => [data, ...prevMessages]);
         // Update cache
         setMessageCache((prev) => ({
           ...prev,
-          [selectedUser._id]: [...(prev[selectedUser._id] || []), data],
+          [selectedUser._id]: [data, ...(prev[selectedUser._id] || [])],
         }));
       } catch (error) {
         toast.error(error.response?.data?.message || "Failed to send message");
@@ -125,11 +125,11 @@ export const ChatProvider = ({ children }) => {
     if (!socket) return;
     socket.on("newMessage", (newMessage) => {
       if (selectedUser && newMessage.sender === selectedUser._id) {
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        setMessages((prevMessages) => [newMessage, ...prevMessages]);
         // Update cache
         setMessageCache((prev) => ({
           ...prev,
-          [selectedUser._id]: [...(prev[selectedUser._id] || []), newMessage],
+          [selectedUser._id]: [newMessage, ...(prev[selectedUser._id] || [])],
         }));
         axios.put(`/api/messages/mark/${newMessage._id}`);
         setUnseenMessages((prev) => ({
@@ -141,11 +141,11 @@ export const ChatProvider = ({ children }) => {
         newMessage.sender === authUser._id &&
         newMessage.receiver === selectedUser._id
       ) {
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        setMessages((prevMessages) => [newMessage, ...prevMessages]);
         // Update cache
         setMessageCache((prev) => ({
           ...prev,
-          [selectedUser._id]: [...(prev[selectedUser._id] || []), newMessage],
+          [selectedUser._id]: [newMessage, ...(prev[selectedUser._id] || [])],
         }));
       } else {
         setUnseenMessages((prevUnseenMessages) => ({
