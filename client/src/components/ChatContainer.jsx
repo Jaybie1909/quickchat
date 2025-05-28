@@ -31,6 +31,12 @@ const ChatContainer = () => {
     if (input.trim() === "") return;
     await sendMessage({ text: input.trim() });
     setInput("");
+    // Force scroll to bottom after sending message
+    setTimeout(() => {
+      if (scrollEnd.current) {
+        scrollEnd.current.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
+    }, 100);
   };
 
   const handleSendImage = async (e) => {
@@ -90,7 +96,7 @@ const ChatContainer = () => {
 
   useEffect(() => {
     if (scrollEnd.current && messages) {
-      scrollEnd.current.scrollIntoView({ behavior: "smooth" });
+      scrollEnd.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [messages]);
 
