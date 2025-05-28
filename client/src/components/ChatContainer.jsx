@@ -12,6 +12,7 @@ const ChatContainer = () => {
 
   const scrollEnd = useRef();
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -37,15 +38,28 @@ const ChatContainer = () => {
 
   useEffect(() => {
     if (selectedUser) {
-      getMessages(selectedUser._id);
+      setIsLoading(true);
+      getMessages(selectedUser._id).finally(() => {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 50);
+      });
     }
-  }, [selectedUser]);
+  }, [selectedUser, getMessages]);
 
   useEffect(() => {
     if (scrollEnd.current && messages) {
       scrollEnd.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  if (isLoading && messages.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center bg-gray-900/50">
+        <div className="animate-pulse text-gray-400">Loading messages...</div>
+      </div>
+    );
+  }
 
   return selectedUser ? (
     <div className="h-full flex flex-col bg-gray-900/50">
@@ -85,21 +99,35 @@ const ChatContainer = () => {
             }`}
           >
             {msg.image ? (
-              <img
-                src={msg.image}
-                alt=""
-                className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden"
-              />
+              <div className="flex flex-col items-end">
+                <img
+                  src={msg.image}
+                  alt=""
+                  className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden"
+                />
+                {msg.sender === authUser._id && (
+                  <span className="text-[10px] text-gray-400 mt-1">
+                    {msg.seen ? "Seen" : ""}
+                  </span>
+                )}
+              </div>
             ) : (
-              <p
-                className={`p-2 max-w-[200px] md:max-w-[300px] text-sm font-light rounded-lg break-all ${
-                  msg.sender === authUser._id
-                    ? "bg-violet-600 rounded-br-none text-white"
-                    : "bg-gray-700 rounded-bl-none text-white"
-                }`}
-              >
-                {msg.text}
-              </p>
+              <div className="flex flex-col items-end">
+                <p
+                  className={`p-2 max-w-[200px] md:max-w-[300px] text-sm font-light rounded-lg break-all ${
+                    msg.sender === authUser._id
+                      ? "bg-violet-600 rounded-br-none text-white"
+                      : "bg-gray-700 rounded-bl-none text-white"
+                  }`}
+                >
+                  {msg.text}
+                </p>
+                {msg.sender === authUser._id && (
+                  <span className="text-[10px] text-gray-400 mt-1">
+                    {msg.seen ? "Seen" : ""}
+                  </span>
+                )}
+              </div>
             )}
             <div className="flex flex-col items-center">
               <img
@@ -111,16 +139,9 @@ const ChatContainer = () => {
                 alt=""
                 className="w-7 h-7 rounded-full"
               />
-              <div className="flex items-center gap-1">
-                <p className="text-xs text-gray-400 mt-1">
-                  {formatMessageTime(msg.createdAt)}
-                </p>
-                {msg.sender === authUser._id && (
-                  <span className="text-xs text-gray-400 mt-1">
-                    {msg.seen ? "Seen" : ""}
-                  </span>
-                )}
-              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {formatMessageTime(msg.createdAt)}
+              </p>
             </div>
           </div>
         ))}

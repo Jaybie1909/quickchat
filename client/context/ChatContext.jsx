@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { AuthContext } from "./AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -9,9 +15,77 @@ export const ChatProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [unseenMessages, setUnseenMessages] = useState({});
+  const [messageCache, setMessageCache] = useState({});
   const { socket, axios, authUser } = useContext(AuthContext);
 
-  const getUsers = async () => {
+  const getMessages = useCallback(
+    async (userId) => {
+      try {
+        // Immediately show cached messages if available
+        if (messageCache[userId]) {
+          setMessages(messageCache[userId]);
+          // Update unseen messages count
+          setUnseenMessages((prev) => ({
+            ...prev,
+            [userId]: 0,
+          }));
+          return;
+        }
+
+        // If no cache, show empty array and fetch in background
+        setMessages([]);
+        const { data } = await axios.get(`/api/messages/${userId}`);
+        if (data.success) {
+          const sortedMessages = data.messages.sort(
+            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+          );
+          setMessages(sortedMessages);
+          setMessageCache((prev) => ({
+            ...prev,
+            [userId]: sortedMessages,
+          }));
+          setUnseenMessages((prev) => ({
+            ...prev,
+            [userId]: 0,
+          }));
+        }
+      } catch (error) {
+        toast.error(error.message);
+      }
+    },
+    [axios, messageCache]
+  );
+
+  // Prefetch messages for all users
+  const prefetchMessages = useCallback(
+    async (users) => {
+      const prefetchPromises = users.map(async (user) => {
+        if (!messageCache[user._id]) {
+          try {
+            const { data } = await axios.get(`/api/messages/${user._id}`);
+            if (data.success) {
+              const sortedMessages = data.messages.sort(
+                (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+              );
+              setMessageCache((prev) => ({
+                ...prev,
+                [user._id]: sortedMessages,
+              }));
+            }
+          } catch (error) {
+            console.error(
+              `Failed to prefetch messages for user ${user._id}:`,
+              error
+            );
+          }
+        }
+      });
+      await Promise.all(prefetchPromises);
+    },
+    [axios, messageCache]
+  );
+
+  const getUsers = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/messages/users");
       if (data.success) {
@@ -19,48 +93,44 @@ export const ChatProvider = ({ children }) => {
         if (data.unseenMessages) {
           setUnseenMessages(data.unseenMessages);
         }
+        // Prefetch messages for all users in the background
+        prefetchMessages(data.users);
       }
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, [axios, prefetchMessages]);
 
-  const getMessages = async (userId) => {
-    try {
-      setMessages([]);
-      const { data } = await axios.get(`/api/messages/${userId}`);
-      if (data.success) {
-        const sortedMessages = data.messages.sort(
-          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  const sendMessage = useCallback(
+    async (messageData) => {
+      try {
+        const { data } = await axios.post(
+          `/api/messages/send/${selectedUser._id}`,
+          messageData
         );
-        setMessages(sortedMessages);
-        setUnseenMessages((prev) => ({
+        setMessages((prevMessages) => [...prevMessages, data]);
+        // Update cache
+        setMessageCache((prev) => ({
           ...prev,
-          [userId]: 0,
+          [selectedUser._id]: [...(prev[selectedUser._id] || []), data],
         }));
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Failed to send message");
       }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
+    },
+    [axios, selectedUser]
+  );
 
-  const sendMessage = async (messageData) => {
-    try {
-      const { data } = await axios.post(
-        `/api/messages/send/${selectedUser._id}`,
-        messageData
-      );
-      setMessages((prevMessages) => [...prevMessages, data]);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send message");
-    }
-  };
-
-  const subscribeToMessages = async () => {
+  const subscribeToMessages = useCallback(() => {
     if (!socket) return;
     socket.on("newMessage", (newMessage) => {
       if (selectedUser && newMessage.sender === selectedUser._id) {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
+        // Update cache
+        setMessageCache((prev) => ({
+          ...prev,
+          [selectedUser._id]: [...(prev[selectedUser._id] || []), newMessage],
+        }));
         axios.put(`/api/messages/mark/${newMessage._id}`);
         setUnseenMessages((prev) => ({
           ...prev,
@@ -72,6 +142,11 @@ export const ChatProvider = ({ children }) => {
         newMessage.receiver === selectedUser._id
       ) {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
+        // Update cache
+        setMessageCache((prev) => ({
+          ...prev,
+          [selectedUser._id]: [...(prev[selectedUser._id] || []), newMessage],
+        }));
       } else {
         setUnseenMessages((prevUnseenMessages) => ({
           ...prevUnseenMessages,
@@ -79,16 +154,16 @@ export const ChatProvider = ({ children }) => {
         }));
       }
     });
-  };
+  }, [socket, selectedUser, authUser, axios]);
 
-  const unsubscribeFromMessages = () => {
+  const unsubscribeFromMessages = useCallback(() => {
     if (socket) socket.off("newMessage");
-  };
+  }, [socket]);
 
   useEffect(() => {
     subscribeToMessages();
     return () => unsubscribeFromMessages();
-  }, [socket, selectedUser]);
+  }, [subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
     if (!selectedUser) {
