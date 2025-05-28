@@ -104,21 +104,60 @@ export const ChatProvider = ({ children }) => {
   const sendMessage = useCallback(
     async (messageData) => {
       try {
+        // Optimistically update UI
+        const optimisticMessage = {
+          _id: Date.now().toString(), // Temporary ID
+          sender: authUser._id,
+          receiver: selectedUser._id,
+          text: messageData.text || "",
+          image: messageData.image || "",
+          createdAt: new Date().toISOString(),
+          seen: false,
+          deleted: false,
+        };
+
+        setMessages((prevMessages) => [optimisticMessage, ...prevMessages]);
+        setMessageCache((prev) => ({
+          ...prev,
+          [selectedUser._id]: [
+            optimisticMessage,
+            ...(prev[selectedUser._id] || []),
+          ],
+        }));
+
+        // Send to server
         const { data } = await axios.post(
           `/api/messages/send/${selectedUser._id}`,
           messageData
         );
-        setMessages((prevMessages) => [data, ...prevMessages]);
-        // Update cache
+
+        // Update with real message data
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg._id === optimisticMessage._id ? data : msg
+          )
+        );
         setMessageCache((prev) => ({
           ...prev,
-          [selectedUser._id]: [data, ...(prev[selectedUser._id] || [])],
+          [selectedUser._id]: prev[selectedUser._id].map((msg) =>
+            msg._id === optimisticMessage._id ? data : msg
+          ),
         }));
       } catch (error) {
+        // Revert optimistic update on error
+        setMessages((prevMessages) =>
+          prevMessages.filter((msg) => msg._id !== Date.now().toString())
+        );
+        setMessageCache((prev) => ({
+          ...prev,
+          [selectedUser._id]: prev[selectedUser._id].filter(
+            (msg) => msg._id !== Date.now().toString()
+          ),
+        }));
         toast.error(error.response?.data?.message || "Failed to send message");
       }
     },
-    [axios, selectedUser]
+    [axios, selectedUser, authUser]
   );
 
   const subscribeToMessages = useCallback(() => {

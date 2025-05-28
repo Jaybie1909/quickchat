@@ -123,13 +123,14 @@ export const sendMessage = async (req, res) => {
       image,
     });
 
-    await newMessage.save();
-
-    // Emit the new message to the receiver's socket
+    // Emit the new message to the receiver's socket immediately
     const receiverSocketId = userSocketMap[receiver];
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
+
+    // Save to database after emitting
+    await newMessage.save();
 
     res.status(200).json(newMessage);
   } catch (error) {

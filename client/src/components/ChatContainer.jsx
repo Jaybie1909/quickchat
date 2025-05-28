@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import toast from "react-hot-toast";
 import assets from "../assets/assets";
 import { formatMessageTime } from "../lib/utils";
@@ -18,6 +24,7 @@ const ChatContainer = () => {
   const { authUser, onlineUsers } = useContext(AuthContext);
 
   const scrollEnd = useRef();
+  const messagesContainerRef = useRef();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -25,18 +32,31 @@ const ChatContainer = () => {
   const [showDropdown, setShowDropdown] = useState(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [mobileMenuMsg, setMobileMenuMsg] = useState(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  const scrollToBottom = useCallback(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (messagesContainerRef.current) {
+      const { scrollTop } = messagesContainerRef.current;
+      // Show scroll button if scrolled down more than 100px
+      setShowScrollButton(scrollTop > 100);
+    }
+  }, []);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (input.trim() === "") return;
     await sendMessage({ text: input.trim() });
     setInput("");
-    // Force scroll to bottom after sending message
-    setTimeout(() => {
-      if (scrollEnd.current) {
-        scrollEnd.current.scrollIntoView({ behavior: "smooth", block: "end" });
-      }
-    }, 100);
+    scrollToBottom();
   };
 
   const handleSendImage = async (e) => {
@@ -89,16 +109,16 @@ const ChatContainer = () => {
       getMessages(selectedUser._id).finally(() => {
         setTimeout(() => {
           setIsLoading(false);
+          scrollToBottom();
         }, 50);
       });
     }
-  }, [selectedUser, getMessages]);
+  }, [selectedUser, getMessages, scrollToBottom]);
 
+  // Scroll when messages change
   useEffect(() => {
-    if (scrollEnd.current && messages) {
-      scrollEnd.current.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-  }, [messages]);
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   if (isLoading && messages.length === 0) {
     return (
@@ -137,7 +157,11 @@ const ChatContainer = () => {
       </div>
 
       {/* Messages - Scrollable area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse">
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse relative"
+      >
         {messages.map((msg, index) => {
           const isSender = msg.sender === authUser._id;
           const isDeleted = msg.deleted;
@@ -251,6 +275,30 @@ const ChatContainer = () => {
             </div>
           );
         })}
+        <div ref={scrollEnd} />
+
+        {/* Scroll to bottom button */}
+        {showScrollButton && (
+          <button
+            onClick={scrollToBottom}
+            className="fixed bottom-20 right-4 bg-violet-600 hover:bg-violet-700 text-white rounded-full p-2 shadow-lg transition-opacity duration-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 10l7-7m0 0l7 7m-7-7v18"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Input Box - Fixed position */}
