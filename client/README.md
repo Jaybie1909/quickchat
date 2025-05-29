@@ -4,7 +4,7 @@ A minimal real-time chat application built with **React**, **Vite**, **Express**
 
 ![Screenshot](<./public/Screenshot%20(423).png>)
 
-----
+---
 
 ## 🛠️ Tech Stack
 
