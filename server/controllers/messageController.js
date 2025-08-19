@@ -120,26 +120,40 @@ export const markMessagesAsSeen = async (req, res) => {
 // ✅ Mark multiple messages as seen (for batch updates)
 export const markManyMessagesAsSeen = async (req, res) => {
   try {
-    const { messageIds } = req.body; // array of message IDs
+    let { messageIds } = req.body; // can be single string or array
     const myId = req.user._id;
 
-    if (!Array.isArray(messageIds) || messageIds.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "messageIds must be a non-empty array" });
+    // Ensure messageIds is always an array
+    if (!Array.isArray(messageIds)) {
+      if (!messageIds) {
+        return res
+          .status(400)
+          .json({ success: false, message: "messageIds is required" });
+      }
+      messageIds = [messageIds]; // wrap single ID into array
     }
 
+    if (messageIds.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "messageIds must not be empty" });
+    }
+
+    // Update all unseen messages
     const updatedMessages = await Message.updateMany(
       { _id: { $in: messageIds }, receiver: myId, seen: false },
       { seen: true }
     );
 
-    // Emit socket events for each message updated
+    // Emit socket events for each updated message
     const updatedMsgs = await Message.find({ _id: { $in: messageIds } });
     updatedMsgs.forEach((msg) => {
       const senderSocketId = userSocketMap[msg.sender.toString()];
       if (senderSocketId) {
-        io.to(senderSocketId).emit("messagesSeen", { id: msg._id, by: myId });
+        io.to(senderSocketId).emit("messagesSeen", {
+          id: msg._id,
+          by: myId,
+        });
       }
     });
 
@@ -148,9 +162,11 @@ export const markManyMessagesAsSeen = async (req, res) => {
       message: `${updatedMessages.modifiedCount} messages marked as seen`,
     });
   } catch (error) {
+    console.error("messagesSeen error:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // Send a new message
 export const sendMessage = async (req, res) => {
