@@ -15,75 +15,75 @@ const RightSidebar = () => {
   return (
     selectedUser && (
       <div
-        className={`bg-gradient-to-br from-gray-900/95 to-black/90 backdrop-blur-xl text-white w-full h-full flex flex-col relative ${
+        className={`bg-gradient-to-br from-purple-900/95 to-black/90 backdrop-blur-xl text-white w-full h-full flex flex-col relative ${
           selectedUser ? "max-md:hidden" : ""
         }`}
         style={{
           background:
-            "linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(0, 0, 0, 0.9) 100%)",
-          boxShadow: "inset 0 1px 0 rgba(251, 191, 36, 0.15)",
+            "linear-gradient(135deg, rgba(88, 28, 135, 0.95) 0%, rgba(30, 0, 40, 0.95) 50%, rgba(0, 0, 0, 0.9) 100%)",
+          boxShadow: "inset 0 1px 0 rgba(196, 117, 225, 0.25)",
         }}
       >
-        {/* Warm background pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/8 pointer-events-none"></div>
+        {/* Warm purple background pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-400/8 via-pink-400/6 to-violet-500/10 pointer-events-none"></div>
 
         {/* Warm top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"></div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-300/70 to-transparent"></div>
 
-        {/* Enhanced Profile Section with warm theme */}
+        {/* Enhanced Profile Section with warm purple theme */}
         <div className="relative pt-8 pb-6 flex flex-col items-center text-center">
-          {/* Profile background glow with warm colors */}
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-r from-amber-500/25 to-orange-500/25 rounded-full blur-xl"></div>
+          {/* Profile background glow with warm purple colors */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-r from-purple-400/30 to-pink-400/25 rounded-full blur-xl"></div>
 
-          {/* Professional profile picture with warm glow */}
+          {/* Professional profile picture with warm purple glow */}
           <div className="relative mb-4 group">
-            <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+            <div className="absolute -inset-2 bg-gradient-to-r from-purple-300 to-pink-300 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
             <img
               src={selectedUser?.profilePic || assets.avatar_icon}
               alt=""
-              className="relative w-24 h-24 rounded-full object-cover border-4 border-amber-400/30 shadow-2xl group-hover:scale-105 transition-transform duration-300"
+              className="relative w-24 h-24 rounded-full object-cover border-4 border-purple-300/40 shadow-2xl group-hover:scale-105 transition-transform duration-300"
             />
             {/* Online indicator */}
             {onlineUsers.includes(selectedUser._id) && (
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-3 border-gray-800 shadow-lg animate-pulse"></div>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-3 border-purple-900 shadow-lg animate-pulse"></div>
             )}
           </div>
 
-          {/* User info with enhanced warm styling */}
+          {/* User info with enhanced warm purple styling */}
           <div className="relative z-10 px-6 space-y-3">
             <h1 className="text-xl font-semibold text-white flex items-center justify-center gap-3">
-              <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">
                 {selectedUser.fullName}
               </span>
               {onlineUsers.includes(selectedUser._id) && (
-                <div className="flex items-center gap-1 text-xs text-green-400 font-medium">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <div className="flex items-center gap-1 text-xs text-green-300 font-medium">
+                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                   Online
                 </div>
               )}
             </h1>
 
             {selectedUser.bio && (
-              <p className="text-gray-200 text-sm leading-relaxed max-w-[200px] mx-auto">
+              <p className="text-purple-100 text-sm leading-relaxed max-w-[200px] mx-auto">
                 {selectedUser.bio}
               </p>
             )}
           </div>
         </div>
 
-        {/* Professional divider with warm tones */}
+        {/* Professional divider with warm purple tones */}
         <div className="relative mx-6 mb-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-amber-400/25 to-transparent"></div>
-          <div className="absolute inset-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent blur-sm"></div>
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-300/35 to-transparent"></div>
+          <div className="absolute inset-0 h-px bg-gradient-to-r from-transparent via-purple-300/50 to-transparent blur-sm"></div>
         </div>
 
-        {/* Enhanced Media Section with warm theme */}
+        {/* Enhanced Media Section with warm purple theme */}
         <div className="flex-1 px-6 overflow-hidden flex flex-col">
-          {/* Media header with warm accent */}
+          {/* Media header with warm purple accent */}
           <div className="mb-4">
             <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
               <svg
-                className="w-4 h-4 text-amber-400"
+                className="w-4 h-4 text-purple-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -97,21 +97,21 @@ const RightSidebar = () => {
               </svg>
               Shared Media
             </h3>
-            <p className="text-xs text-gray-300">
+            <p className="text-xs text-purple-200">
               {msgImages.length} {msgImages.length === 1 ? "image" : "images"}{" "}
               shared
             </p>
           </div>
 
-          {/* Professional media grid with warm borders */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-amber-500/30 scrollbar-track-transparent">
+          {/* Professional media grid with warm purple borders */}
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-400/40 scrollbar-track-transparent">
             {msgImages.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {msgImages.map((url, index) => (
                   <div
                     key={index}
                     onClick={() => window.open(url)}
-                    className="group relative cursor-pointer rounded-xl overflow-hidden bg-gray-800/50 border border-amber-500/20 hover:border-amber-400/40 transition-all duration-300 hover:scale-105"
+                    className="group relative cursor-pointer rounded-xl overflow-hidden bg-purple-800/30 border border-purple-400/25 hover:border-purple-300/50 transition-all duration-300 hover:scale-105"
                   >
                     {/* Image with overlay */}
                     <div className="relative aspect-square overflow-hidden">
@@ -120,12 +120,12 @@ const RightSidebar = () => {
                         alt=""
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       />
-                      {/* Warm hover overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-amber-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      {/* Warm purple hover overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-purple-800/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                      {/* View icon on hover with warm background */}
+                      {/* View icon on hover with warm purple background */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-8 h-8 bg-amber-500/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-amber-400/50">
+                        <div className="w-8 h-8 bg-purple-400/40 backdrop-blur-sm rounded-full flex items-center justify-center border border-purple-300/60">
                           <svg
                             className="w-4 h-4 text-white"
                             fill="none"
@@ -154,7 +154,7 @@ const RightSidebar = () => {
             ) : (
               <div className="flex flex-col items-center justify-center h-32 text-center">
                 <svg
-                  className="w-12 h-12 text-amber-400/30 mb-3"
+                  className="w-12 h-12 text-purple-300/40 mb-3"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -166,16 +166,16 @@ const RightSidebar = () => {
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p className="text-gray-300 text-xs">No images shared yet</p>
+                <p className="text-purple-200 text-xs">No images shared yet</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Professional Logout Section with warm gradient */}
-        <div className="relative mt-6 p-6 bg-gradient-to-t from-gray-800/50 to-transparent border-t border-amber-500/20">
+        {/* Professional Logout Section with warm purple gradient */}
+        <div className="relative mt-6 p-6 bg-gradient-to-t from-purple-800/40 to-transparent border-t border-purple-400/25">
           {/* Warm bottom accent line */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"></div>
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-300/70 to-transparent"></div>
 
           <button
             onClick={() => logout()}
@@ -206,9 +206,9 @@ const RightSidebar = () => {
           </button>
         </div>
 
-        {/* Decorative elements with warm colors */}
-        <div className="absolute top-20 right-4 w-1 h-1 bg-amber-400/40 rounded-full animate-ping"></div>
-        <div className="absolute bottom-32 left-4 w-1.5 h-1.5 bg-orange-400/40 rounded-full animate-ping animation-delay-2000"></div>
+        {/* Decorative elements with warm purple colors */}
+        <div className="absolute top-20 right-4 w-1 h-1 bg-purple-300/50 rounded-full animate-ping"></div>
+        <div className="absolute bottom-32 left-4 w-1.5 h-1.5 bg-pink-300/50 rounded-full animate-ping animation-delay-2000"></div>
       </div>
     )
   );

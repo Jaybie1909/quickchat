@@ -132,40 +132,40 @@ const ChatContainer = () => {
 
   if (isLoading && messages.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-800/50 to-gray-900/50 relative">
+      <div className="h-full flex items-center justify-center bg-gradient-to-br from-slate-800/50 to-purple-900/50 relative">
         {/* Loading background pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 via-transparent to-orange-400/5"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-400/5 via-transparent to-purple-400/5"></div>
         <div className="flex flex-col items-center space-y-4">
           {/* Professional loading spinner */}
           <div className="relative">
-            <div className="w-12 h-12 border-4 border-gray-600 border-t-amber-500 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-r-orange-500 rounded-full animate-spin animation-delay-150"></div>
+            <div className="w-12 h-12 border-4 border-slate-600 border-t-violet-500 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-r-purple-500 rounded-full animate-spin animation-delay-150"></div>
           </div>
-          <div className="text-gray-200 font-medium">Loading messages...</div>
-          <div className="text-gray-400 text-sm">Please wait a moment</div>
+          <div className="text-slate-200 font-medium">Loading messages...</div>
+          <div className="text-slate-400 text-sm">Please wait a moment</div>
         </div>
       </div>
     );
   }
 
   return selectedUser ? (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-800/30 to-gray-900/30 relative">
+    <div className="h-full flex flex-col bg-gradient-to-br from-slate-800/30 to-purple-900/30 relative">
       {/* Subtle background pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-400/2 via-transparent to-orange-400/5 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-400/2 via-transparent to-purple-400/5 pointer-events-none"></div>
 
       {/* Professional Header */}
-      <div className="relative flex items-center gap-4 py-4 px-6 border-b border-amber-200/10 backdrop-blur-sm bg-gradient-to-r from-gray-800/80 to-gray-700/60">
+      <div className="relative flex items-center gap-4 py-4 px-6 border-b border-violet-200/15 backdrop-blur-sm bg-gradient-to-r from-slate-800/85 to-slate-700/70">
         {/* Header glow effect */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/40 to-transparent"></div>
 
         <div className="relative">
           <img
             src={selectedUser.profilePic || assets.avatar_icon}
             alt=""
-            className="w-11 h-11 rounded-full object-cover border-2 border-amber-200/20 shadow-lg"
+            className="w-11 h-11 rounded-full object-cover border-2 border-violet-200/30 shadow-lg"
           />
           {onlineUsers.includes(selectedUser._id) && (
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full border-2 border-gray-800 animate-pulse"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-violet-400 rounded-full border-2 border-slate-800 animate-pulse"></div>
           )}
         </div>
 
@@ -173,27 +173,27 @@ const ChatContainer = () => {
           <p className="text-lg font-semibold text-white mb-1">
             {selectedUser.fullName}
           </p>
-          <p className="text-xs text-gray-300">
+          <p className="text-xs text-slate-300">
             {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
           </p>
         </div>
 
         <button
           onClick={() => setSelectedUser(null)}
-          className="md:hidden p-2 hover:bg-amber-400/10 rounded-full transition-colors duration-200"
+          className="md:hidden p-2 hover:bg-violet-400/15 rounded-full transition-colors duration-200"
         >
           <img
             src={assets.arrow_icon}
             alt=""
-            className="w-5 h-5 opacity-80 filter brightness-125"
+            className="w-5 h-5 opacity-90 filter brightness-125"
           />
         </button>
 
-        <button className="hidden md:block p-2 hover:bg-amber-400/10 rounded-full transition-colors duration-200">
+        <button className="hidden md:block p-2 hover:bg-violet-400/15 rounded-full transition-colors duration-200">
           <img
             src={assets.help_icon}
             alt=""
-            className="w-5 h-5 opacity-80 filter brightness-125"
+            className="w-5 h-5 opacity-90 filter brightness-125"
           />
         </button>
       </div>
@@ -202,10 +202,10 @@ const ChatContainer = () => {
       <div
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse relative scrollbar-thin scrollbar-thumb-amber-400/20 scrollbar-track-transparent"
+        className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse relative scrollbar-thin scrollbar-thumb-violet-400/25 scrollbar-track-transparent"
         style={{
           scrollbarWidth: "thin",
-          scrollbarColor: "rgba(251, 191, 36, 0.2) transparent",
+          scrollbarColor: "rgba(139, 92, 246, 0.25) transparent",
         }}
       >
         {messages.map((msg, index) => {
@@ -228,13 +228,13 @@ const ChatContainer = () => {
               {/* Enhanced Message Bubbles */}
               {isDeleted ? (
                 <div className="flex flex-col items-end w-full">
-                  <div className="italic text-xs text-gray-400 bg-gray-800/60 backdrop-blur-sm rounded-xl px-4 py-2 border border-amber-200/10 select-none">
+                  <div className="italic text-xs text-slate-400 bg-slate-800/70 backdrop-blur-sm rounded-xl px-4 py-2 border border-violet-200/15 select-none">
                     This message was deleted
                   </div>
                 </div>
               ) : msg.image ? (
                 <div className="flex flex-col items-end relative group">
-                  <div className="relative overflow-hidden rounded-2xl border border-amber-200/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <div className="relative overflow-hidden rounded-2xl border border-violet-200/25 shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <img
                       src={msg.image}
                       alt=""
@@ -244,13 +244,13 @@ const ChatContainer = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                   {isSender && (
-                    <span className="text-[10px] text-gray-400 mt-1 font-medium">
+                    <span className="text-[10px] text-slate-400 mt-1 font-medium">
                       {msg.seen ? "✓ Seen" : "✓ Sent"}
                     </span>
                   )}
                   {isSender && !isDeleted && (
                     <button
-                      className="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-white bg-black/30 hover:bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
+                      className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-white bg-black/30 hover:bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
                       onClick={() =>
                         setShowDropdown(
                           msg._id === showDropdown ? null : msg._id
@@ -261,7 +261,7 @@ const ChatContainer = () => {
                     </button>
                   )}
                   {showDropdown === msg._id && (
-                    <div className="absolute top-10 right-0 w-24 bg-gray-800/95 backdrop-blur-sm border border-amber-200/20 rounded-xl shadow-xl z-10 overflow-hidden">
+                    <div className="absolute top-10 right-0 w-24 bg-slate-800/95 backdrop-blur-sm border border-violet-200/25 rounded-xl shadow-xl z-10 overflow-hidden">
                       <button
                         className="block w-full text-left px-4 py-2.5 text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors duration-200"
                         onClick={() => handleDeleteClick(msg)}
@@ -276,13 +276,13 @@ const ChatContainer = () => {
                   <div
                     className={`relative p-3 max-w-[280px] md:max-w-[350px] text-sm font-normal rounded-2xl break-words backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 ${
                       isSender
-                        ? "bg-gradient-to-br from-amber-500 to-orange-600 text-gray-900 border-amber-200/20 rounded-br-md"
-                        : "bg-gradient-to-br from-gray-800/60 to-gray-700/60 text-white border-amber-200/20 rounded-bl-md"
+                        ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white border-violet-200/25 rounded-br-md"
+                        : "bg-gradient-to-br from-slate-800/70 to-slate-700/70 text-white border-violet-200/25 rounded-bl-md"
                     }`}
                   >
                     {/* Message glow effect */}
                     {isSender && (
-                      <div className="absolute -inset-0.5 bg-gradient-to-br from-amber-500/30 to-orange-600/30 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                      <div className="absolute -inset-0.5 bg-gradient-to-br from-violet-500/30 to-purple-600/30 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                     )}
 
                     <p className="relative z-10 leading-relaxed">{msg.text}</p>
@@ -292,7 +292,7 @@ const ChatContainer = () => {
                   </div>
 
                   {isSender && (
-                    <span className="text-[10px] text-gray-400 mt-1 font-medium flex items-center gap-1">
+                    <span className="text-[10px] text-slate-400 mt-1 font-medium flex items-center gap-1">
                       <svg
                         className="w-3 h-3"
                         fill="currentColor"
@@ -310,7 +310,7 @@ const ChatContainer = () => {
 
                   {isSender && !isDeleted && (
                     <button
-                      className="absolute top-1 right-1 p-1.5 text-gray-700 hover:text-gray-900 bg-black/10 hover:bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
+                      className="absolute top-1 right-1 p-1.5 text-white/70 hover:text-white bg-black/10 hover:bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
                       onClick={() =>
                         setShowDropdown(
                           msg._id === showDropdown ? null : msg._id
@@ -322,7 +322,7 @@ const ChatContainer = () => {
                   )}
 
                   {showDropdown === msg._id && (
-                    <div className="absolute top-8 right-0 w-24 bg-gray-800/95 backdrop-blur-sm border border-amber-200/20 rounded-xl shadow-xl z-10 overflow-hidden">
+                    <div className="absolute top-8 right-0 w-24 bg-slate-800/95 backdrop-blur-sm border border-violet-200/25 rounded-xl shadow-xl z-10 overflow-hidden">
                       <button
                         className="block w-full text-left px-4 py-2.5 text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors duration-200"
                         onClick={() => handleDeleteClick(msg)}
@@ -344,14 +344,14 @@ const ChatContainer = () => {
                         : selectedUser?.profilePic || assets.avatar_icon
                     }
                     alt=""
-                    className="w-8 h-8 rounded-full object-cover border-2 border-amber-200/20 shadow-md"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-violet-200/25 shadow-md"
                   />
                   {/* Online indicator for non-sender */}
                   {!isSender && onlineUsers.includes(selectedUser._id) && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-amber-400 rounded-full border border-gray-800"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-violet-400 rounded-full border border-slate-800"></div>
                   )}
                 </div>
-                <p className="text-[10px] text-gray-400 font-medium whitespace-nowrap">
+                <p className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
                   {formatMessageTime(msg.createdAt)}
                 </p>
               </div>
@@ -364,7 +364,7 @@ const ChatContainer = () => {
         {showScrollButton && (
           <button
             onClick={scrollToBottom}
-            className="fixed bottom-24 right-6 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-gray-900 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-10"
+            className="fixed bottom-24 right-6 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-10"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -385,19 +385,19 @@ const ChatContainer = () => {
       </div>
 
       {/* Professional Input Box */}
-      <div className="relative p-4 border-t border-amber-200/10 backdrop-blur-sm bg-gradient-to-r from-gray-800/80 to-gray-700/60">
+      <div className="relative p-4 border-t border-violet-200/15 backdrop-blur-sm bg-gradient-to-r from-slate-800/85 to-slate-700/70">
         {/* Input glow effect */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-400/30 to-transparent"></div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/40 to-transparent"></div>
 
         <form onSubmit={handleSendMessage} className="flex items-center gap-3">
-          <div className="flex-1 flex items-center bg-gray-800/60 backdrop-blur-sm px-4 py-2 rounded-full border border-amber-200/20 hover:border-amber-200/30 transition-colors duration-300">
+          <div className="flex-1 flex items-center bg-slate-800/70 backdrop-blur-sm px-4 py-2 rounded-full border border-violet-200/25 hover:border-violet-200/35 transition-colors duration-300">
             <input
               ref={inputRef} // 👈 attach ref here
               onChange={(e) => setInput(e.target.value)}
               value={input}
               type="text"
               placeholder="Type a message..."
-              className="flex-1 text-sm py-2 bg-transparent border-none outline-none text-white placeholder-gray-300 font-normal"
+              className="flex-1 text-sm py-2 bg-transparent border-none outline-none text-white placeholder-slate-300 font-normal"
             />
 
             <input
@@ -410,12 +410,12 @@ const ChatContainer = () => {
 
             <label
               htmlFor="image"
-              className="cursor-pointer p-2 hover:bg-amber-400/10 rounded-full transition-colors duration-200"
+              className="cursor-pointer p-2 hover:bg-violet-400/15 rounded-full transition-colors duration-200"
             >
               <img
                 src={assets.gallery_icon}
                 alt="Send image"
-                className="w-5 h-5 opacity-80 hover:opacity-100 transition-opacity duration-200 filter brightness-125"
+                className="w-5 h-5 opacity-90 hover:opacity-100 transition-opacity duration-200 filter brightness-125"
               />
             </label>
           </div>
@@ -425,8 +425,8 @@ const ChatContainer = () => {
             disabled={!input.trim()}
             className={`relative p-3 rounded-full transition-all duration-300 hover:scale-105 active:scale-95 ${
               input.trim()
-                ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-lg hover:shadow-xl"
-                : "bg-gray-600/40 cursor-not-allowed"
+                ? "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-lg hover:shadow-xl"
+                : "bg-slate-600/40 cursor-not-allowed"
             }`}
           >
             {input.trim() && (
@@ -435,7 +435,7 @@ const ChatContainer = () => {
             <img
               src={assets.send_button}
               alt="Send"
-              className="relative w-5 h-5 z-10 filter brightness-110"
+              className="relative w-5 h-5 z-10 filter brightness-125"
             />
           </button>
         </form>
@@ -443,10 +443,10 @@ const ChatContainer = () => {
 
       {/* Enhanced Delete Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-gray-800/95 backdrop-blur-xl border border-amber-200/20 p-8 rounded-2xl shadow-2xl w-80 text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800/95 backdrop-blur-xl border border-violet-200/25 p-8 rounded-2xl shadow-2xl w-80 text-center">
             {/* Modal glow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-amber-500/20 rounded-2xl blur opacity-50"></div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-violet-500/20 rounded-2xl blur opacity-50"></div>
 
             <div className="relative">
               <div className="mb-6">
@@ -456,7 +456,7 @@ const ChatContainer = () => {
                 <h3 className="text-lg font-semibold text-white mb-2">
                   Delete Message
                 </h3>
-                <p className="text-gray-300 text-sm">
+                <p className="text-slate-300 text-sm">
                   This action cannot be undone. The message will be permanently
                   deleted.
                 </p>
@@ -471,7 +471,7 @@ const ChatContainer = () => {
                 </button>
                 <button
                   onClick={handleCancelDelete}
-                  className="bg-gray-700/60 hover:bg-gray-600/80 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 border border-amber-200/20"
+                  className="bg-slate-700/70 hover:bg-slate-600/80 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 border border-violet-200/25"
                 >
                   Cancel
                 </button>
@@ -484,14 +484,14 @@ const ChatContainer = () => {
       {/* Enhanced Mobile Menu */}
       {showMobileMenu && mobileMenuMsg && (
         <div
-          className="fixed inset-0 z-50 flex items-end md:hidden bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end md:hidden bg-black/70 backdrop-blur-sm"
           onClick={() => setShowMobileMenu(false)}
         >
           <div
-            className="w-full bg-gray-800/95 backdrop-blur-xl border-t border-amber-200/20 rounded-t-2xl p-6 animate-in slide-in-from-bottom-full duration-300"
+            className="w-full bg-slate-800/95 backdrop-blur-xl border-t border-violet-200/25 rounded-t-2xl p-6 animate-in slide-in-from-bottom-full duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-12 h-1 bg-amber-200/30 rounded-full mx-auto mb-6"></div>
+            <div className="w-12 h-1 bg-violet-200/30 rounded-full mx-auto mb-6"></div>
 
             <button
               className="flex items-center gap-3 w-full text-left px-4 py-4 text-sm text-red-400 hover:bg-red-500/20 rounded-xl transition-colors duration-200"
@@ -505,7 +505,7 @@ const ChatContainer = () => {
             </button>
 
             <button
-              className="flex items-center gap-3 w-full text-left px-4 py-4 text-sm text-gray-300 hover:bg-amber-400/10 rounded-xl transition-colors duration-200 mt-2"
+              className="flex items-center gap-3 w-full text-left px-4 py-4 text-sm text-slate-300 hover:bg-violet-400/15 rounded-xl transition-colors duration-200 mt-2"
               onClick={() => setShowMobileMenu(false)}
             >
               Cancel
@@ -515,30 +515,30 @@ const ChatContainer = () => {
       )}
     </div>
   ) : (
-    <div className="hidden md:flex flex-col items-center justify-center gap-6 h-full bg-gradient-to-br from-gray-800/30 to-gray-900/30 relative">
+    <div className="hidden md:flex flex-col items-center justify-center gap-6 h-full bg-gradient-to-br from-slate-800/30 to-purple-900/30 relative">
       {/* Welcome screen background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-400/2 via-transparent to-orange-400/5 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-400/2 via-transparent to-purple-400/5 pointer-events-none"></div>
 
       {/* Enhanced welcome screen */}
       <div className="relative text-center">
-        <div className="absolute -inset-8 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-full blur-xl opacity-50"></div>
+        <div className="absolute -inset-8 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-full blur-xl opacity-50"></div>
         <img
           src={assets.logo_icon}
           alt=""
-          className="relative w-20 h-20 mx-auto mb-6 drop-shadow-2xl filter brightness-110"
+          className="relative w-20 h-20 mx-auto mb-6 drop-shadow-2xl filter brightness-125"
         />
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent mb-3">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-200 to-purple-200 bg-clip-text text-transparent mb-3">
           Welcome to Chat
         </h2>
-        <p className="text-gray-300 max-w-sm leading-relaxed">
+        <p className="text-slate-300 max-w-sm leading-relaxed">
           Select a conversation from the sidebar to start chatting with your
           friends and colleagues.
         </p>
       </div>
 
       {/* Decorative elements */}
-      <div className="absolute top-20 left-20 w-2 h-2 bg-amber-400/40 rounded-full animate-ping"></div>
-      <div className="absolute bottom-20 right-20 w-1.5 h-1.5 bg-orange-400/40 rounded-full animate-ping animation-delay-1000"></div>
+      <div className="absolute top-20 left-20 w-2 h-2 bg-violet-400/50 rounded-full animate-ping"></div>
+      <div className="absolute bottom-20 right-20 w-1.5 h-1.5 bg-purple-400/50 rounded-full animate-ping animation-delay-1000"></div>
     </div>
   );
 };
