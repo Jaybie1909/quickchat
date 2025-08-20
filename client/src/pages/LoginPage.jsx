@@ -9,10 +9,22 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isDataSubmitted, setIsDataSubmitted] = useState(false);
+  const [agreed, setAgreed] = useState(false); // ✅ new state for checkbox
+  const [showError, setShowError] = useState(false);
 
   const { login } = useContext(AuthContext);
   const onSubmitHandler = (e) => {
     e.preventDefault();
+
+    if (!agreed) {
+      setShowError(true);
+      return;
+    }
+
+    setShowError(false);
+    // ✅ proceed with signup logic here
+    console.log("Form submitted successfully!");
+
     if (currState === "Sign Up" && !isDataSubmitted) {
       setIsDataSubmitted(true);
       return;
@@ -24,7 +36,7 @@ const LoginPage = () => {
       bio,
     });
   };
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 flex items-center justify-center gap-8 sm:justify-evenly max-sm:flex-col relative overflow-hidden">
       {/* Animated background elements */}
@@ -45,10 +57,10 @@ const LoginPage = () => {
       {/* Logo with enhanced styling */}
       <div className="relative group">
         <div className="absolute -inset-4 bg-gradient-to-r from-violet-400 to-purple-400 rounded-full blur opacity-35 group-hover:opacity-45 transition duration-1000"></div>
-        <img 
-          src={assets.logo_big} 
-          alt="" 
-          className="w-[min(30vw,250px)] relative z-10 drop-shadow-2xl hover:scale-105 transition-transform duration-300 filter brightness-125" 
+        <img
+          src={assets.logo_big}
+          alt=""
+          className="w-[min(30vw,250px)] relative z-10 drop-shadow-2xl hover:scale-105 transition-transform duration-300 filter brightness-125"
         />
       </div>
 
@@ -56,18 +68,20 @@ const LoginPage = () => {
       <div className="relative">
         {/* Form glow effect */}
         <div className="absolute -inset-1 bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 rounded-2xl blur opacity-30"></div>
-        
+
         <form
           onSubmit={onSubmitHandler}
           className="relative backdrop-blur-xl bg-slate-900/90 text-white border border-violet-200/40 p-8 flex flex-col gap-6 rounded-2xl shadow-2xl min-w-[400px] max-sm:min-w-[320px]"
           style={{
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.90) 50%, rgba(51, 65, 85, 0.85) 100%)',
-            boxShadow: '0 8px 32px 0 rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.15)'
+            background:
+              "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.90) 50%, rgba(51, 65, 85, 0.85) 100%)",
+            boxShadow:
+              "0 8px 32px 0 rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
           }}
         >
           {/* Top accent line */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/70 to-transparent"></div>
-          
+
           {/* Form header */}
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-semibold text-3xl bg-gradient-to-r from-violet-200 to-purple-200 bg-clip-text text-transparent">
@@ -151,14 +165,25 @@ const LoginPage = () => {
           </button>
 
           {/* Checkbox with improved styling */}
-          <div className="flex items-center gap-3 text-sm text-slate-200 hover:text-white transition-colors duration-200">
-            <div className="relative">
-              <input 
-                type="checkbox" 
-                className="w-5 h-5 bg-slate-700 border-2 border-violet-300/60 rounded-md focus:ring-2 focus:ring-violet-400/70 focus:ring-offset-0 focus:ring-offset-transparent accent-violet-500"
+          <div className="flex flex-col gap-1 text-sm text-slate-200">
+            <label className="flex items-center gap-3 hover:text-white transition-colors duration-200">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => {
+                  setAgreed(e.target.checked);
+                  if (e.target.checked) setShowError(false);
+                }}
+                className="w-5 h-5 bg-slate-700 border-2 border-violet-300/60 rounded-md focus:ring-2 focus:ring-violet-400/70 accent-violet-500"
               />
-            </div>
-            <p>I agree to the terms of use & privacy policy</p>
+              <span>I agree to the terms of use & privacy policy</span>
+            </label>
+
+            {showError && (
+              <p className="text-red-500 text-sm">
+                You must agree before continuing.
+              </p>
+            )}
           </div>
 
           {/* Enhanced toggle section */}
