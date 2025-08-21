@@ -26,7 +26,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 flex items-center justify-center relative overflow-hidden px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 flex items-center justify-center relative overflow-hidden px-4 py-1">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
@@ -87,7 +87,7 @@ const ProfilePage = () => {
                   onChange={(e) => setSelectedImage(e.target.files[0])}
                   type="file"
                   id="avatar"
-                  accept=".png, .jpg, .jpeg .webp"
+                  accept=".png, .jpg, .jpeg, .webp"
                   hidden
                 />
                 <div className="relative">

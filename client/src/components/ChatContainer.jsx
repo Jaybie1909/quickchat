@@ -39,7 +39,7 @@ const ChatContainer = () => {
   const scrollToBottom = useCallback(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
-        top: 0,
+        top: messagesContainerRef.current.scrollHeight,
         behavior: "smooth",
       });
     }
@@ -82,11 +82,15 @@ const ChatContainer = () => {
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (messageToDelete) {
-      await deleteMessage(messageToDelete._id);
+  const handleConfirmDelete = async (type) => {
+    if (!messageToDelete) return;
+
+    try {
+      await deleteMessage(messageToDelete._id, type);
       setShowDeleteModal(false);
       setMessageToDelete(null);
+    } catch (error) {
+      console.error("Delete failed:", error);
     }
   };
 
@@ -95,15 +99,23 @@ const ChatContainer = () => {
     setMessageToDelete(null);
   };
 
-  let longPressTimer = null;
+  const longPressTimer = useRef(null);
+
   const handleTouchStart = (msg) => {
-    longPressTimer = setTimeout(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+    longPressTimer.current = setTimeout(() => {
       setMobileMenuMsg(msg);
       setShowMobileMenu(true);
-    }, 500);
+    }, 500); // 500ms = long press threshold
   };
+
   const handleTouchEnd = () => {
-    clearTimeout(longPressTimer);
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
   };
 
   // 👇 Focus input whenever a user is selected
@@ -227,137 +239,199 @@ const ChatContainer = () => {
             >
               {/* Enhanced Message Bubbles */}
               {isDeleted ? (
-                <div className="flex flex-col items-end w-full">
-                  <div className="italic text-xs text-slate-400 bg-slate-800/70 backdrop-blur-sm rounded-xl px-4 py-2 border border-violet-200/15 select-none">
-                    This message was deleted
-                  </div>
-                </div>
-              ) : msg.image ? (
-                <div className="flex flex-col items-end relative group">
-                  <div className="relative overflow-hidden rounded-2xl border border-violet-200/25 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <img
-                      src={msg.image}
-                      alt=""
-                      className="max-w-[280px] max-h-[300px] object-cover"
-                    />
-                    {/* Image overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-                  {isSender && (
-                    <span className="text-[10px] text-slate-400 mt-1 font-medium">
-                      {msg.seen ? "✓ Seen" : "✓ Sent"}
-                    </span>
-                  )}
-                  {isSender && !isDeleted && (
-                    <button
-                      className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-white bg-black/30 hover:bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
-                      onClick={() =>
-                        setShowDropdown(
-                          msg._id === showDropdown ? null : msg._id
-                        )
-                      }
+                <>
+                  {/* Deleted message bubble */}
+                  <div className="flex flex-col items-end relative group">
+                    <div
+                      className={`relative p-3 max-w-[280px] md:max-w-[350px] text-sm font-normal rounded-2xl break-words backdrop-blur-sm border shadow-lg transition-all duration-300 ${
+                        isSender
+                          ? "bg-gradient-to-br from-slate-700/70 to-slate-600/70 text-slate-400 border-slate-600/25 rounded-br-md"
+                          : "bg-gradient-to-br from-slate-800/70 to-slate-700/70 text-slate-400 border-violet-200/15 rounded-bl-md"
+                      }`}
                     >
-                      <FaEllipsisV size={10} />
-                    </button>
-                  )}
-                  {showDropdown === msg._id && (
-                    <div className="absolute top-10 right-0 w-24 bg-slate-800/95 backdrop-blur-sm border border-violet-200/25 rounded-xl shadow-xl z-10 overflow-hidden">
-                      <button
-                        className="block w-full text-left px-4 py-2.5 text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors duration-200"
-                        onClick={() => handleDeleteClick(msg)}
-                      >
-                        Delete
-                      </button>
+                      <p className="relative z-10 leading-relaxed italic text-xs">
+                        This message was deleted
+                      </p>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex flex-col items-end relative group">
-                  <div
-                    className={`relative p-3 max-w-[280px] md:max-w-[350px] text-sm font-normal rounded-2xl break-words backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 ${
-                      isSender
-                        ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white border-violet-200/25 rounded-br-md"
-                        : "bg-gradient-to-br from-slate-800/70 to-slate-700/70 text-white border-violet-200/25 rounded-bl-md"
-                    }`}
-                  >
-                    {/* Message glow effect */}
+                  </div>
+
+                  {/* Profile & Time (same structure as non-deleted messages) */}
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="relative">
+                      <img
+                        src={
+                          isSender
+                            ? authUser?.profilePic || assets.avatar_icon
+                            : selectedUser?.profilePic || assets.avatar_icon
+                        }
+                        alt=""
+                        className="w-8 h-8 rounded-full object-cover border-2 border-violet-200/25 shadow-md"
+                      />
+                      {/* Online indicator for non-sender */}
+                      {!isSender && onlineUsers.includes(selectedUser._id) && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-violet-400 rounded-full border border-slate-800"></div>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                      {formatMessageTime(msg.createdAt)}
+                    </p>
+                  </div>
+                </>
+              ) : msg.image ? (
+                <>
+                  <div className="flex flex-col items-end relative group">
+                    <div className="relative overflow-hidden rounded-2xl border border-violet-200/25 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                      <img
+                        src={msg.image}
+                        alt=""
+                        className="max-w-[280px] max-h-[300px] object-cover"
+                      />
+                      {/* Image overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
                     {isSender && (
-                      <div className="absolute -inset-0.5 bg-gradient-to-br from-violet-500/30 to-purple-600/30 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                      <span className="text-[10px] text-slate-400 mt-1 font-medium">
+                        {msg.seen ? "✓ Seen" : "✓ Sent"}
+                      </span>
+                    )}
+                    {isSender && !isDeleted && (
+                      <button
+                        className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-white bg-black/30 hover:bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
+                        onClick={() =>
+                          setShowDropdown(
+                            msg._id === showDropdown ? null : msg._id
+                          )
+                        }
+                      >
+                        <FaEllipsisV size={10} />
+                      </button>
+                    )}
+                    {showDropdown === msg._id && (
+                      <div className="absolute top-10 right-0 w-24 bg-slate-800/95 backdrop-blur-sm border border-violet-200/25 rounded-xl shadow-xl z-10 overflow-hidden">
+                        <button
+                          className="block w-full text-left px-4 py-2.5 text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors duration-200"
+                          onClick={() => handleDeleteClick(msg)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Enhanced Profile & Time for Image messages */}
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="relative">
+                      <img
+                        src={
+                          isSender
+                            ? authUser?.profilePic || assets.avatar_icon
+                            : selectedUser?.profilePic || assets.avatar_icon
+                        }
+                        alt=""
+                        className="w-8 h-8 rounded-full object-cover border-2 border-violet-200/25 shadow-md"
+                      />
+                      {/* Online indicator for non-sender */}
+                      {!isSender && onlineUsers.includes(selectedUser._id) && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-violet-400 rounded-full border border-slate-800"></div>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                      {formatMessageTime(msg.createdAt)}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-col items-end relative group">
+                    <div
+                      className={`relative p-3 max-w-[280px] md:max-w-[350px] text-sm font-normal rounded-2xl break-words backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 ${
+                        isSender
+                          ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white border-violet-200/25 rounded-br-md"
+                          : "bg-gradient-to-br from-slate-800/70 to-slate-700/70 text-white border-violet-200/25 rounded-bl-md"
+                      }`}
+                    >
+                      {/* Message glow effect */}
+                      {isSender && (
+                        <div className="absolute -inset-0.5 bg-gradient-to-br from-violet-500/30 to-purple-600/30 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                      )}
+
+                      <p className="relative z-10 leading-relaxed">
+                        {msg.text}
+                      </p>
+
+                      {/* Inner highlight */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-2xl pointer-events-none"></div>
+                    </div>
+
+                    {isSender && (
+                      <span className="text-[10px] text-slate-400 mt-1 font-medium flex items-center gap-1">
+                        <svg
+                          className="w-3 h-3"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        {msg.seen ? "Seen" : "Sent"}
+                      </span>
                     )}
 
-                    <p className="relative z-10 leading-relaxed">{msg.text}</p>
+                    {isSender && !isDeleted && (
+                      <button
+                        className="absolute top-1 right-1 p-1.5 text-white/70 hover:text-white bg-black/10 hover:bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
+                        onClick={() =>
+                          setShowDropdown(
+                            msg._id === showDropdown ? null : msg._id
+                          )
+                        }
+                      >
+                        <FaEllipsisV size={10} />
+                      </button>
+                    )}
 
-                    {/* Inner highlight */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-2xl pointer-events-none"></div>
+                    {showDropdown === msg._id && (
+                      <div className="absolute top-8 right-0 w-24 bg-slate-800/95 backdrop-blur-sm border border-violet-200/25 rounded-xl shadow-xl z-10 overflow-hidden">
+                        <button
+                          className="block w-full text-left px-4 py-2.5 text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors duration-200"
+                          onClick={() => handleDeleteClick(msg)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  {isSender && (
-                    <span className="text-[10px] text-slate-400 mt-1 font-medium flex items-center gap-1">
-                      <svg
-                        className="w-3 h-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {msg.seen ? "Seen" : "Sent"}
-                    </span>
-                  )}
-
-                  {isSender && !isDeleted && (
-                    <button
-                      className="absolute top-1 right-1 p-1.5 text-white/70 hover:text-white bg-black/10 hover:bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
-                      onClick={() =>
-                        setShowDropdown(
-                          msg._id === showDropdown ? null : msg._id
-                        )
-                      }
-                    >
-                      <FaEllipsisV size={10} />
-                    </button>
-                  )}
-
-                  {showDropdown === msg._id && (
-                    <div className="absolute top-8 right-0 w-24 bg-slate-800/95 backdrop-blur-sm border border-violet-200/25 rounded-xl shadow-xl z-10 overflow-hidden">
-                      <button
-                        className="block w-full text-left px-4 py-2.5 text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors duration-200"
-                        onClick={() => handleDeleteClick(msg)}
-                      >
-                        Delete
-                      </button>
+                  {/* Enhanced Profile & Time for Text messages */}
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="relative">
+                      <img
+                        src={
+                          isSender
+                            ? authUser?.profilePic || assets.avatar_icon
+                            : selectedUser?.profilePic || assets.avatar_icon
+                        }
+                        alt=""
+                        className="w-8 h-8 rounded-full object-cover border-2 border-violet-200/25 shadow-md"
+                      />
+                      {/* Online indicator for non-sender */}
+                      {!isSender && onlineUsers.includes(selectedUser._id) && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-violet-400 rounded-full border border-slate-800"></div>
+                      )}
                     </div>
-                  )}
-                </div>
+                    <p className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                      {formatMessageTime(msg.createdAt)}
+                    </p>
+                  </div>
+                </>
               )}
-
-              {/* Enhanced Profile & Time */}
-              <div className="flex flex-col items-center space-y-1">
-                <div className="relative">
-                  <img
-                    src={
-                      isSender
-                        ? authUser?.profilePic || assets.avatar_icon
-                        : selectedUser?.profilePic || assets.avatar_icon
-                    }
-                    alt=""
-                    className="w-8 h-8 rounded-full object-cover border-2 border-violet-200/25 shadow-md"
-                  />
-                  {/* Online indicator for non-sender */}
-                  {!isSender && onlineUsers.includes(selectedUser._id) && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-violet-400 rounded-full border border-slate-800"></div>
-                  )}
-                </div>
-                <p className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
-                  {formatMessageTime(msg.createdAt)}
-                </p>
-              </div>
             </div>
           );
         })}
+
         <div ref={scrollEnd} />
 
         {/* Enhanced Scroll Button */}
@@ -444,7 +518,7 @@ const ChatContainer = () => {
       {/* Enhanced Delete Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-slate-800/95 backdrop-blur-xl border border-violet-200/25 p-8 rounded-2xl shadow-2xl w-80 text-center">
+          <div className="bg-slate-800/95 backdrop-blur-xl border border-violet-200/25 p-8 rounded-2xl shadow-2xl w-80 text-center relative">
             {/* Modal glow effect */}
             <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-violet-500/20 rounded-2xl blur opacity-50"></div>
 
@@ -457,21 +531,33 @@ const ChatContainer = () => {
                   Delete Message
                 </h3>
                 <p className="text-slate-300 text-sm">
-                  This action cannot be undone. The message will be permanently
-                  deleted.
+                  Choose how you want to delete this message.
                 </p>
               </div>
 
-              <div className="flex justify-center gap-3">
+              {/* Buttons */}
+              <div className="flex flex-col gap-3">
                 <button
-                  onClick={handleConfirmDelete}
+                  onClick={() => {
+                    handleConfirmDelete("me");
+                  }}
+                  className="bg-slate-700/70 hover:bg-slate-600/80 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 border border-violet-200/25"
+                >
+                  Delete for me
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleConfirmDelete("everyone");
+                  }}
                   className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95"
                 >
-                  Delete
+                  Delete for everyone
                 </button>
+
                 <button
                   onClick={handleCancelDelete}
-                  className="bg-slate-700/70 hover:bg-slate-600/80 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 border border-violet-200/25"
+                  className="bg-slate-600/60 hover:bg-slate-500/80 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   Cancel
                 </button>

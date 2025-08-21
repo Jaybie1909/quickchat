@@ -230,41 +230,60 @@ export const ChatProvider = ({ children }) => {
         setSelectedUser,
         unseenMessages,
         setUnseenMessages,
-        deleteMessage: async (id) => {
-          if (!selectedUser) return;
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg._id === id
-                ? {
-                    ...msg,
-                    text: "This message was deleted",
-                    deleted: true,
-                    image: "",
-                  }
-                : msg
-            )
-          );
-          setMessageCache((prev) => ({
-            ...prev,
-            [selectedUser._id]: prev[selectedUser._id]?.map((msg) =>
-              msg._id === id
-                ? {
-                    ...msg,
-                    text: "This message was deleted",
-                    deleted: true,
-                    image: "",
-                  }
-                : msg
-            ),
-          }));
-          try {
-            await axios.delete(`/api/messages/${id}`);
-          } catch (error) {
-            toast.error(
-              error.response?.data?.message || "Failed to delete message"
-            );
-          }
-        },
+        deleteMessage: async (id, type = "everyone") => {
+  if (!selectedUser) return;
+
+  if (type === "me") {
+    // "Delete for me" → just remove it from my local state/cache
+    setMessages((prev) => prev.filter((msg) => msg._id !== id));
+    setMessageCache((prev) => ({
+      ...prev,
+      [selectedUser._id]: prev[selectedUser._id]?.filter(
+        (msg) => msg._id !== id
+      ),
+    }));
+    return; // no backend call
+  }
+
+  if (type === "everyone") {
+    // Optimistic UI update: mark as deleted
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === id
+          ? {
+              ...msg,
+              text: "This message was deleted",
+              deleted: true,
+              image: "",
+            }
+          : msg
+      )
+    );
+
+    setMessageCache((prev) => ({
+      ...prev,
+      [selectedUser._id]: prev[selectedUser._id]?.map((msg) =>
+        msg._id === id
+          ? {
+              ...msg,
+              text: "This message was deleted",
+              deleted: true,
+              image: "",
+            }
+          : msg
+      ),
+    }));
+
+    try {
+      await axios.delete(`/api/messages/${id}`); // delete for everyone
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to delete message"
+      );
+    }
+  }
+},
+
       }}
     >
       {children}
